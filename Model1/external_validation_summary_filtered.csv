@@ -1,0 +1,4 @@
+task,n_filtered,n_correct,sensitivity
+gram_positive,149,130,0.87248322147651
+gram_negative,513,489,0.9532163742690059
+fungal,277,155,0.5595667870036101

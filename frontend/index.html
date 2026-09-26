@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI-AMP — Antimicrobial Peptide Console</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23fafaf9'/%3E%3Cpath d='M9 22c4-8 10-8 14 0M9 10c4 8 10 8 14 0' stroke='%23059669' stroke-width='2.4' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@1,6..72,400&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+<link rel="stylesheet" href="/app/styles.css?v=5" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="brand" href="/app" aria-label="AI-AMP home">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M9 23c4-9 10-9 14 0M9 9c4 9 10 9 14 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+      <span class="brand-name">AI-AMP</span>
+    </a>
+    <nav class="tabs" aria-label="Console sections">
+      <button class="nav-link active" data-tab="predict"><i class="ph ph-flask-conical" aria-hidden="true"></i>Predict</button>
+      <button class="nav-link" data-tab="generate"><i class="ph ph-dna" aria-hidden="true"></i>Generate</button>
+      <button class="nav-link" data-tab="validation"><i class="ph ph-chart-line-up" aria-hidden="true"></i>Validation</button>
+    </nav>
+    <div class="masthead-right">
+      <a class="api-link" href="/docs" target="_blank" rel="noopener"><i class="ph ph-book-open-text" aria-hidden="true"></i>API reference</a>
+      <span class="live-dot" id="api-status" role="status"><i></i><span>checking</span></span>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+
+  <section class="view active" id="view-predict" aria-label="Predict">
+    <div class="page-title">
+      <h1>Score candidate peptides</h1>
+      <p>Spectrum classification across Gram-positive, Gram-negative, and fungal targets, plus binary AMP gating. One shared ESM2 embedding serves every head.</p>
+    </div>
+
+    <div class="predict-grid">
+      <div class="results-col">
+        <div class="mode-row" id="predict-mode" role="group" aria-label="Prediction mode">
+          <button class="mode-btn active" data-mode="combined">Combined</button>
+          <button class="mode-btn" data-mode="model1">Model 1 only</button>
+          <button class="mode-btn" data-mode="model2">Model 2 only</button>
+        </div>
+
+        <div id="predict-output" hidden>
+          <div class="output-toolbar">
+            <div class="toolbar-tabs">
+              <button class="toolbar-tab active" data-target="table-view">Table</button>
+              <button class="toolbar-tab" data-target="csv-view">CSV</button>
+            </div>
+            <button class="btn-quiet" id="download-csv"><i class="ph ph-download-simple" aria-hidden="true"></i>Download CSV</button>
+          </div>
+          <div class="tab-panel active" id="table-view">
+            <div class="table-wrap">
+              <table class="data-table" id="results-table">
+                <thead id="results-thead"></thead>
+                <tbody id="results-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="tab-panel" id="csv-view">
+            <pre class="csv-block" id="csv-text"></pre>
+          </div>
+          <div class="thresholds-strip" id="thresholds-strip"></div>
+        </div>
+
+        <div class="empty-state" id="predict-empty">
+          <svg class="empty-helix" viewBox="0 0 120 48" aria-hidden="true">
+            <path d="M8 38C35 10 85 10 112 38M8 10c27 28 77 28 104 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h2>No scores yet</h2>
+          <p>Paste sequences in the input rail. Results land here with per-label calls and probabilities.</p>
+        </div>
+
+        <div id="predict-progress" class="workline" hidden>
+          <svg class="helix-spin" viewBox="0 0 48 48" aria-hidden="true">
+            <path class="h1" d="M8 38C20 16 28 16 40 38" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            <path class="h2" d="M8 10c12 22 20 22 32 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+          <span id="predict-progress-text">Scoring sequences…</span>
+        </div>
+      </div>
+
+      <aside class="input-rail" aria-label="Sequence input">
+        <div class="rail-card">
+          <label for="seq-input">Sequences</label>
+          <p class="field-help">One per line · max 100 · standard 20 amino acids</p>
+          <textarea id="seq-input" rows="9" spellcheck="false" placeholder="GLFDIVKKVVGALGSL"></textarea>
+          <div class="rail-meta"><span class="char-count" id="seq-count">0 sequences</span></div>
+          <div class="validation-errors" id="predict-errors"></div>
+          <button class="btn-primary magnet" id="predict-btn"><span>Score sequences</span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="view" id="view-generate" aria-label="Generate">
+    <div class="page-title">
+      <h1>Synthesize novel peptides</h1>
+      <p>Autoregressive sampling from the transformer checkpoints. Stage 2 is fine-tuned on validated AMPs and is the deliverable model. Stage 1 covers general peptide grammar only.</p>
+    </div>
+
+    <div class="stage-duo">
+      <button class="stage-card active" data-stage="stage2" aria-pressed="true">
+        <span class="stage-tag ok">AMP fine-tuned</span>
+        <span class="stage-name">Stage 2</span>
+        <span class="stage-desc">Validated deliverable for AMP design.</span>
+      </button>
+      <button class="stage-card" data-stage="stage1" aria-pressed="false">
+        <span class="stage-tag warn">General corpus</span>
+        <span class="stage-name">Stage 1</span>
+        <span class="stage-desc">PeptideAtlas grammar. Not AMP-validated.</span>
+      </button>
+    </div>
+    <div class="notice warn" id="stage1-warn" hidden>Stage 1 output must not be presented as equivalent to Stage 2.</div>
+
+    <div class="panel">
+      <div class="controls-grid">
+        <div class="control-group"><label for="gen-n">Count</label><input type="range" id="gen-n" min="1" max="100" value="10" /><span class="control-val" id="gen-n-val">10</span></div>
+        <div class="control-group"><label for="gen-min">Min length</label><input type="range" id="gen-min" min="5" max="83" value="15" /><span class="control-val" id="gen-min-val">15</span></div>
+        <div class="control-group"><label for="gen-max">Max length</label><input type="range" id="gen-max" min="5" max="83" value="50" /><span class="control-val" id="gen-max-val">50</span></div>
+        <div class="control-group"><label for="gen-temp">Temperature</label><input type="range" id="gen-temp" min="0.1" max="2.0" step="0.1" value="1.0" /><span class="control-val" id="gen-temp-val">1.0</span></div>
+        <div class="control-group"><label for="gen-topp">Top-p</label><input type="range" id="gen-topp" min="0.1" max="1.0" step="0.05" value="0.9" /><span class="control-val" id="gen-topp-val">0.9</span></div>
+      </div>
+      <div class="validation-errors" id="gen-errors"></div>
+      <button class="btn-primary magnet" id="generate-btn"><span>Synthesize peptides</span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+      <div id="gen-progress" class="workline" hidden>
+        <svg class="helix-spin" viewBox="0 0 48 48" aria-hidden="true">
+          <path class="h1" d="M8 38C20 16 28 16 40 38" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path class="h2" d="M8 10c12 22 20 22 32 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span id="gen-progress-text">Sampling peptides…</span>
+      </div>
+    </div>
+
+    <div id="gen-output" hidden>
+      <div class="output-toolbar">
+        <span class="toolbar-label" id="gen-result-label"></span>
+        <button class="btn-quiet" id="copy-all-seq"><i class="ph ph-copy" aria-hidden="true"></i>Copy all</button>
+      </div>
+      <div class="seq-list" id="seq-list"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-validation" aria-label="Validation">
+    <div class="page-title">
+      <h1>Validation ledger</h1>
+      <p>Precomputed metrics and diagnostic plots from completed runs, served as static files. <em class="pull">Nothing here is recomputed on request.</em></p>
+    </div>
+
+    <article class="model-section" aria-label="Model 1 validation">
+      <div class="model-head"><span class="model-idx">01</span><h2>Model 1 · Spectrum classifier</h2></div>
+      <div class="model-body" id="m1-val-body"><div class="skel-table"></div></div>
+    </article>
+
+    <article class="model-section" aria-label="Model 2 validation">
+      <div class="model-head"><span class="model-idx">02</span><h2>Model 2 · AMP gatekeeper</h2></div>
+      <div class="model-body" id="m2-val-body"><div class="skel-table"></div></div>
+    </article>
+
+    <article class="model-section" aria-label="Generative model validation">
+      <div class="model-head"><span class="model-idx">03</span><h2>Generative models · Training diagnostics</h2></div>
+      <div class="model-body" id="gen-val-body"><div class="skel-table"></div></div>
+    </article>
+  </section>
+
+</main>
+
+<footer class="colophon">
+  <span>AI-AMP console · models load once at startup</span>
+  <span><a href="/docs" target="_blank" rel="noopener">API reference</a> · <a href="/openapi.json" target="_blank" rel="noopener">OpenAPI JSON</a></span>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden>
+  <figure>
+    <img id="lb-img" src="" alt="Enlarged validation plot" />
+    <figcaption id="lb-cap"></figcaption>
+  </figure>
+</div>
+
+<script src="/app/app.js?v=5"></script>
+</body>
+</html>

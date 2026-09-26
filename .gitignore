@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+*.log
+
+# Conda
+.conda/
+
+# Servers / local runtime
+nohup.out
+.server.log
+server.log
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Secrets (never commit)
+.env
+*.pem
+*.key
