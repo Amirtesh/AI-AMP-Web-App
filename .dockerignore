@@ -1,0 +1,13 @@
+# Keep the Docker build context (and HF Spaces uploads) lean.
+.git/
+__pycache__/
+*.pyc
+.venv/
+*.log
+nohup.out
+.server.log
+server.log
+.DS_Store
+.vscode/
+.idea/
+.env

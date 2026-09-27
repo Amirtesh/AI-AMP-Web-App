@@ -1,12 +1,12 @@
-# Pinned serving stack for the AI-AMP FastAPI backend.
-# For a full conda environment (ML libraries included), use env.yml instead:
-#   conda env create -f env.yml && conda activate ai-amp-backend
 fastapi>=0.110.0
 uvicorn[standard]>=0.29.0
 pydantic>=2.0.0
 numpy>=1.24.0,<2.0.0
 pandas>=2.0.0
-# The following are required at runtime by the real model code paths
-# (versions must match env.yml so pickled/joblib artifacts stay compatible):
-# torch>=2.0.0, fair-esm>=2.0.0, xgboost>=2.0.0, scikit-learn>=1.3.0,
-# joblib>=1.3.0, biopython>=1.81, modlamp>=4.3.0
+torch>=2.0.0
+fair-esm>=2.0.0
+xgboost>=2.0.0
+scikit-learn>=1.3.0
+joblib>=1.3.0
+biopython>=1.81
+modlamp>=4.3.0

@@ -1,3 +1,10 @@
+---
+title: AI-AMP Web App
+sdk: docker
+app_port: 7860
+short_description: Antimicrobial peptide prediction and generation console
+---
+
 # AI-AMP Model Suite — FastAPI Backend
 
 Backend-only service (no frontend in this pass) over the four model components in `Web-App/`:
